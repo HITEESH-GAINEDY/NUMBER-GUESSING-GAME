@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>H Game</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at top, #f4f9ff, #8ac7ff);
+      color: #111827;
+    }
+    .page {
+      width: 100%;
+      max-width: 860px;
+      margin: 24px;
+    }
+    .hero {
+      text-align: center;
+      padding: 28px 24px 18px;
+    }
+    .hero h1 {
+      margin: 0;
+      font-size: 42px;
+      letter-spacing: -0.05em;
+    }
+    .hero p {
+      margin: 14px auto 0;
+      max-width: 640px;
+      line-height: 1.7;
+      color: #334155;
+    }
+    .game-grid {
+      display: grid;
+      gap: 24px;
+      grid-template-columns: 1fr;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+      padding: 30px;
+    }
+    .card h2 {
+      margin-top: 0;
+      font-size: 26px;
+      color: #0f172a;
+    }
+    .card p {
+      line-height: 1.7;
+      color: #475569;
+      margin: 0 0 20px;
+    }
+    input,
+    button {
+      width: 100%;
+      border-radius: 14px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    input {
+      padding: 14px 16px;
+      border: 1px solid #cbd5e1;
+      margin-bottom: 18px;
+      outline: none;
+    }
+    button {
+      padding: 14px 16px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform 0.16s ease, background 0.16s ease;
+    }
+    button:hover {
+      transform: translateY(-1px);
+    }
+    .primary {
+      background: #2563eb;
+      color: #ffffff;
+    }
+    .secondary {
+      background: #475569;
+      color: #ffffff;
+      margin-top: 12px;
+    }
+    .status {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 16px;
+      min-height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #0f172a;
+    }
+    .status.success {
+      background: #ecfdf5;
+      border-color: #a7f3d0;
+      color: #166534;
+    }
+    .status.error {
+      background: #fef2f2;
+      border-color: #fecdd3;
+      color: #991b1b;
+    }
+    .attempts {
+      margin-top: 16px;
+      font-weight: 700;
+      color: #334155;
+    }
+    @media (min-width: 760px) {
+      .game-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <h1>H Game</h1>
+      <p>Welcome to H Game — a clean, fun browser game experience. Guess the secret number between 1 and 20, and see if you can win within 5 attempts.</p>
+    </section>
+
+    <section class="game-grid">
+      <div class="card">
+        <h2>Guess the Number</h2>
+        <p>Try to find the secret number. You have 5 attempts, and the page will tell you whether you need to guess higher or lower.</p>
+        <input id="guessInput" type="number" min="1" max="20" placeholder="Enter a number (1-20)">
+        <button id="guessButton" class="primary">Submit Guess</button>
+        <button id="resetButton" class="secondary">Start New Game</button>
+        <div id="status" class="status">Good luck! Make your first guess.</div>
+        <p id="attempts" class="attempts">Attempts left: 5</p>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const secretNumber = () => Math.floor(Math.random() * 20) + 1;
+    let target = secretNumber();
+    let attemptsLeft = 5;
+    const guessInput = document.getElementById('guessInput');
+    const guessButton = document.getElementById('guessButton');
+    const resetButton = document.getElementById('resetButton');
+    const status = document.getElementById('status');
+    const attempts = document.getElementById('attempts');
+
+    const updateStatus = (message, type = '') => {
+      status.textContent = message;
+      status.className = 'status' + (type ? ` ${type}` : '');
+    };
+
+    const updateAttempts = () => {
+      attempts.textContent = `Attempts left: ${attemptsLeft}`;
+    };
+
+    const resetGame = () => {
+      target = secretNumber();
+      attemptsLeft = 5;
+      guessInput.value = '';
+      guessInput.disabled = false;
+      guessButton.disabled = false;
+      updateStatus('New game started! Guess a number between 1 and 20.');
+      updateAttempts();
+    };
+
+    guessButton.addEventListener('click', () => {
+      const guess = Number(guessInput.value);
+
+      if (!guess || guess < 1 || guess > 20) {
+        updateStatus('Please enter a valid number from 1 to 20.', 'error');
+        return;
+      }
+
+      if (attemptsLeft <= 0) {
+        updateStatus('Game over! Press Start New Game to play again.', 'error');
+        return;
+      }
+
+      attemptsLeft -= 1;
+      updateAttempts();
+
+      if (guess === target) {
+        updateStatus(`Correct! The secret number was ${target}. You win!`, 'success');
+        guessInput.disabled = true;
+        guessButton.disabled = true;
+      } else if (attemptsLeft === 0) {
+        updateStatus(`Out of attempts. The secret number was ${target}.`, 'error');
+        guessInput.disabled = true;
+        guessButton.disabled = true;
+      } else if (guess < target) {
+        updateStatus('Too low — try a higher number.', 'error');
+      } else {
+        updateStatus('Too high — try a lower number.', 'error');
+      }
+    });
+
+    resetButton.addEventListener('click', resetGame);
+  </script>
+</body>
+</html>
